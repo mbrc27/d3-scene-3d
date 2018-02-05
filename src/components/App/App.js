@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Globe from "../Globe/Globe";
 import Space from "../Space/Space";
-import { provideCanvas } from "../../helpers/Canvas";
+import { CanvasProvider } from "../../helpers/Canvas";
 import { getCountriesGeom } from "../../api/geodata";
 import './App.css';
 
@@ -14,7 +14,7 @@ class App extends Component {
   componentDidMount() {
     getCountriesGeom()
       .then((data) => {
-        this.setState({ ...this.state, data });
+        this.setState(state => ({ ...state, data }));
       })
       .catch((error) => {
         this.setState(state => {
@@ -28,12 +28,12 @@ class App extends Component {
     if (!data) return <div>loading...</div>;
 
     return (
-      <div>
-        <Globe width={500} height={500} scale={150} topoJSON={data}/>
-        <Space width={500} height={500} scale={150}/>
-      </div>
+      <CanvasProvider width={900} height={900}>
+        <Space scale={200}/>
+        <Globe scale={200} topoJSON={data}/>
+      </CanvasProvider>
     );
   }
 }
 
-export default provideCanvas({ width: 500, height: 500 })(App);
+export default App;

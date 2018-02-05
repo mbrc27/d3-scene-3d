@@ -6,42 +6,46 @@ export const withCanvas = EnchancedComponent => {
         <EnchancedComponent
             {...props}
             getCanvas={context.getCanvas}
+            width={context.width}
+            height={context.height}
         />
     );
 
     Canvas.contextTypes = {
-        getCanvas: PropTypes.func
+        getCanvas: PropTypes.func,
+        width: PropTypes.number,
+        height: PropTypes.number
     };
 
     return Canvas;
 };
 
-export const provideCanvas = ({ width, height }) => EnchancedComponent => {
-    class Canvas extends Component {
-        constructor(props) {
-            super(props);
-            this.getCanvas = this.getCanvas.bind(this);
-        }
-        getChildContext() {
-            return { getCanvas: this.getCanvas };
-        }
-        getCanvas() {
-            return this.canvas;
-        }
-
-        render() {
-            return (
-                <Fragment>
-                    <canvas ref={(canvas) => this.canvas = canvas} width={width} height={height} />
-                    <EnchancedComponent />
-                </Fragment >
-            );
-        }
+export class CanvasProvider extends Component {
+    constructor(props) {
+        super(props);
+        this.getCanvas = this.getCanvas.bind(this);
+    }
+    getChildContext() {
+        const { width, height } = this.props;
+        return { getCanvas: this.getCanvas, width, height };
+    }
+    getCanvas() {
+        return this.canvas;
     }
 
-    Canvas.childContextTypes = {
-        getCanvas: PropTypes.func
-    };
-
-    return Canvas;
+    render() {
+        const { width, height } = this.props;
+        return (
+            <Fragment>
+                <canvas ref={(canvas) => this.canvas = canvas} width={width} height={height} />
+                {this.props.children}
+            </Fragment >
+        );
+    }
 }
+
+CanvasProvider.childContextTypes = {
+    getCanvas: PropTypes.func,
+    width: PropTypes.number,
+    height: PropTypes.number
+};

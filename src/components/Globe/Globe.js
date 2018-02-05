@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { geoPath, geoOrthographic } from "d3-geo";
 import { withCanvas } from "../../helpers/Canvas";
+import 'inset.js';
 
 class Globe extends Component {
     constructor(props) {
@@ -28,26 +29,41 @@ class Globe extends Component {
     }
 
     render() {
-        const {topoJSON } = this.props;
+        const { topoJSON } = this.props;
         const { ctx } = this.state;
 
         if (ctx) {
-            ctx.fillStyle = "#00006B";
+            ctx.save();
+
+            ctx.fillStyle = "#053367";
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = "white";
+            ctx.beginPath();
+            this.path(this.globe);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "#053367";
+            ctx.shadowInset = true;
+            ctx.shadowBlur = 95;
+            ctx.shadowColor = 'black';
             ctx.beginPath();
             this.path(this.globe);
             ctx.fill();
 
-            ctx.fillStyle = "#29527A";
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = "#409440";
             ctx.beginPath();
             this.path(topoJSON);
             ctx.fill();
 
-
-            ctx.strokeStyle = "#fff";
-            ctx.lineWidth = .5;
+            ctx.strokeStyle = "#c1c1c1";
+            ctx.lineWidth = .25;
             ctx.beginPath();
             this.path(topoJSON);
             ctx.stroke();
+
+            ctx.restore();
         }
 
         return null;
