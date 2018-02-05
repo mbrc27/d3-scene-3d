@@ -6,6 +6,7 @@
     background: white;
     border: 0;
     box-shadow: 0 0 3px 3px #bababa;
+    cursor: pointer;
     font-size: 15px;
     font-weight: bolder;
     padding: 20px;
