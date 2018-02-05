@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 export const withCanvas = EnchancedComponent => {
@@ -20,7 +20,7 @@ export const withCanvas = EnchancedComponent => {
     return Canvas;
 };
 
-export class CanvasProvider extends Component {
+export class CanvasProvider extends PureComponent {
     constructor(props) {
         super(props);
         this.getCanvas = this.getCanvas.bind(this);

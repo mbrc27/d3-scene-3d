@@ -1,9 +1,9 @@
-import { Component } from 'react';
+import { PureComponent } from 'react';
 import { scaleLinear } from 'd3-scale';
 import { randomUniform } from 'd3-random';
 import { withCanvas } from "../../helpers/Canvas";
 
-class Space extends Component {
+class Space extends PureComponent {
     constructor(props) {
         super(props);
         const { width, height } = props;
@@ -33,8 +33,10 @@ class Space extends Component {
 
     render() {
         const { ctx, stars } = this.state;
+        const { width, height } = this.props;
 
         if (ctx) {
+            ctx.clearRect(0, 0, width, height);
             ctx.save();
 
             ctx.fillStyle = "white";

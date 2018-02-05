@@ -1,31 +1,72 @@
-import { Component } from 'react';
+import { PureComponent } from 'react';
 import { geoPath, geoOrthographic } from "d3-geo";
 import { withCanvas } from "../../helpers/Canvas";
+import { getTrackballRotation } from "../../helpers/Trackball";
 import 'inset.js';
 
-class Globe extends Component {
+class Globe extends PureComponent {
     constructor(props) {
         super(props);
-        this.state = { ctx: null, };
+        this.state = { ctx: null };
+        this.rotationEase = 2;
         this.globe = { type: "Sphere" };
+
+        this.mouseMove = this.mouseMove.bind(this);
     }
     componentDidMount() {
-        const ctx = this.props.getCanvas().getContext("2d");
+        const canvas = this.props.getCanvas();
+        const ctx = canvas.getContext("2d");
+        this.bindEvents();
         this.setState(state => ({ ...state, ctx }));
     }
 
+    bindEvents(unbind = false) {
+        const canvas = this.props.getCanvas();
+
+        const mouseDown = ({ clientX, clientY }) => {
+            this.originCoords = [clientX / this.rotationEase, clientY / this.rotationEase];
+            canvas.addEventListener("mousemove", this.mouseMove);
+        }
+
+        const mouseUp = () => {
+            this.originCoords = [0, 0];
+            canvas.removeEventListener("mousemove", this.mouseMove);
+        }
+        if (!unbind) {
+            canvas.addEventListener("mousedown", mouseDown);
+            canvas.addEventListener("mouseup", mouseUp);
+        } else {
+            canvas.removeEventListener("mousedown", mouseDown);
+            canvas.removeEventListener("mouseup", mouseUp);
+        }
+    }
+
+    mouseMove(evt) {
+        const { clientX, clientY } = evt;
+        const originRotation = this.projection.rotate();
+        const rotation = this.trackballRotation(originRotation, this.originCoords, [clientX / this.rotationEase, clientY / this.rotationEase]);
+
+        this.props.rotate(rotation);
+    }
+
+    componentWillUnmount() {
+        this.bindEvents(true);
+    }
+
     componentWillUpdate(props, state) {
-        const { scale, width, height } = props;
+        const { scale, width, height, rotation } = props;
         const { ctx } = state;
-        const projection = geoOrthographic()
+        this.projection = geoOrthographic()
             .scale(scale)
             .translate([width / 2, height / 2])
-            .rotate([0, 0])
+            .rotate(rotation)
             .clipAngle(90);
 
         this.path = geoPath()
-            .projection(projection)
+            .projection(this.projection)
             .context(ctx);
+
+        this.trackballRotation = getTrackballRotation(this.projection);
     }
 
     render() {
@@ -52,10 +93,11 @@ class Globe extends Component {
             ctx.fill();
 
             ctx.shadowBlur = 10;
-            ctx.fillStyle = "#409440";
+            ctx.fillStyle = "#587c2e";//"#409440";
             ctx.beginPath();
             this.path(topoJSON);
             ctx.fill();
+            ctx.shadowInset = false;
 
             ctx.strokeStyle = "#c1c1c1";
             ctx.lineWidth = .25;
