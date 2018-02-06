@@ -50,12 +50,12 @@ class Space extends PureComponent {
             ctx.strokeStyle = "white";
             ctx.shadowBlur = 10;
             ctx.shadowColor = "white";
+            ctx.beginPath();
             stars.forEach((star) => {
-                ctx.beginPath();
                 this.path.pointRadius(star.properties.radius);
                 this.path(star);
-                ctx.fill();
             });
+            ctx.fill();
 
             ctx.restore();
         }

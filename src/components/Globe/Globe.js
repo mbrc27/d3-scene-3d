@@ -93,12 +93,12 @@ class Globe extends PureComponent {
             ctx.fill();
 
             ctx.shadowBlur = 10;
+            ctx.beginPath();
             topoJSON.features.forEach((country) => {
                 ctx.fillStyle = "#587c2e";
-                ctx.beginPath();
                 this.path(country);
-                ctx.fill();
             });
+            ctx.fill();
             ctx.shadowInset = false;
 
             ctx.strokeStyle = "#c1c1c1";
