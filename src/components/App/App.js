@@ -35,7 +35,11 @@ class App extends PureComponent {
 
   zoom(zoomIn = false) {
     const scaleAdjust = 100;
-    this.setState(state => ({ ...state, scale: zoomIn ? state.scale + scaleAdjust : state.scale - scaleAdjust }))
+    this.setState(state => ({
+      ...state, scale: zoomIn ?
+        state.scale + scaleAdjust :
+        Math.max(state.scale - scaleAdjust, 200)
+    }))
   }
 
   changeRotation(rotation) {

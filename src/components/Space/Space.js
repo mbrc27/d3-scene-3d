@@ -1,26 +1,20 @@
 import { PureComponent } from 'react';
-import { scaleLinear } from 'd3-scale';
-import { randomUniform } from 'd3-random';
+import { geoPath, geoAzimuthalEquidistant } from "d3-geo";
 import { withCanvas } from "../../helpers/Canvas";
 
 class Space extends PureComponent {
     constructor(props) {
         super(props);
-        const { width, height } = props;
-        const xScale = scaleLinear()
-            .range([0, width])
-            .domain([0, 100]);
-
-        const yScale = scaleLinear()
-            .range([height, 0])
-            .domain([0, 100]);
-
-        const randomFunc = randomUniform(0, 100);
-
         // We're creating random distribution of stars dataset
         const stars = new Array(200).fill(0).map(() => ({
-            x: xScale(randomFunc()),
-            y: yScale(randomFunc()),
+            geometry: {
+                type: 'Point',
+                coordinates: [Math.random() * 360 - 180, Math.random() * 180 - 90]
+            },
+            type: 'Feature',
+            properties: {
+                radius: Math.random() * 1.5
+            }
         }));
 
         this.state = { stars };
@@ -29,6 +23,20 @@ class Space extends PureComponent {
     componentDidMount() {
         const ctx = this.props.getCanvas().getContext("2d");
         this.setState(state => ({ ...state, ctx }));
+    }
+
+    componentWillUpdate(props, state) {
+        const { scale, width, height, rotation } = props;
+        const { ctx } = state;
+        this.projection = geoAzimuthalEquidistant()
+            .scale(scale)
+            .translate([width / 2, height / 2])
+            .rotate(rotation)
+            //.clipAngle(90);
+
+        this.path = geoPath()
+            .projection(this.projection)
+            .context(ctx);
     }
 
     render() {
@@ -40,9 +48,15 @@ class Space extends PureComponent {
             ctx.save();
 
             ctx.fillStyle = "white";
+            ctx.strokeStyle = "white";
             ctx.shadowBlur = 10;
             ctx.shadowColor = "white";
-            stars.forEach(({ x, y }) => ctx.fillRect(x, y, 1.5, 1.5));
+            stars.forEach((star) => {
+                ctx.beginPath();
+                this.path.pointRadius(star.properties.radius);
+                this.path(star);
+                ctx.fill();
+            });
 
             ctx.restore();
         }
