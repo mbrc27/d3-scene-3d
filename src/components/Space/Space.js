@@ -31,8 +31,7 @@ class Space extends PureComponent {
         this.projection = geoAzimuthalEquidistant()
             .scale(scale)
             .translate([width / 2, height / 2])
-            .rotate(rotation)
-            //.clipAngle(90);
+            .rotate(rotation);
 
         this.path = geoPath()
             .projection(this.projection)

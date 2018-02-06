@@ -20,23 +20,28 @@ App uses very simple project structure (in order to achive maximum clarity, the 
 - Canvas - CanvasProvider container and withCanvas HOC for a easy canvas contex management in visual components
 - Trackball - Trakcball functions based on the [pattricksurry's](http://bl.ocks.org/patricksurry) [blocks example](http://bl.ocks.org/patricksurry/5721459) for rotating orthograpic globe.
 ### Space
-Space data is generated using randomUniform function from d3-random module, it is scaled using linear scale (from d3-scale) to an canvas dimesions:
+Space data is generated using randomUniform function from d3-random module, it is scaled using geoAzimuthalEquidistant projection to an canvas dimesions:
 ```js
 const { width, height } = props;
-const xScale = scaleLinear()
-    .range([0, width])
-    .domain([0, 100]);
+this.projection = geoAzimuthalEquidistant()
+    .scale(scale)
+    .translate([width / 2, height / 2])
+    .rotate(rotation);
 
-const yScale = scaleLinear()
-    .range([height, 0])
-    .domain([0, 100]);
-
-const randomFunc = randomUniform(0, 100);
+this.path = geoPath()
+    .projection(this.projection)
+    .context(ctx);
 
 // We're creating random distribution of stars dataset
 const stars = new Array(200).fill(0).map(() => ({
-    x: xScale(randomFunc()),
-    y: yScale(randomFunc()),
+    geometry: {
+        type: 'Point',
+        coordinates: [Math.random() * 360 - 180, Math.random() * 180 - 90]
+    },
+    type: 'Feature',
+    properties: {
+        radius: Math.random() * 1.5
+    }
 }));
 ```
 Space is drawn as a 1 pixel rectangle (with small blur):
