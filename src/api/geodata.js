@@ -11,7 +11,7 @@ export const getCountriesCodes = () => {
     });
 }
 
-export const getCountriesGDP = () => {
+export const GetCountriesPowerUsage = () => {
     return new Promise((resolve, reject) => {
         csv("/power_cons.csv")
             .get((err, response) => {
@@ -23,7 +23,7 @@ export const getCountriesGDP = () => {
 
 export const getGeom = () => {
     return new Promise((resolve, reject) => {
-        json("/world-110m.json")
+        json("/world.topo.json")
             .get((err, response) => {
                 if (err) reject(new Error("Could not countries geometry"));
                 resolve(response);
@@ -34,19 +34,19 @@ export const getGeom = () => {
 export const getCountriesGeom = () => (new Promise((resolve, reject) => {
     Promise.all([
         getCountriesCodes(),
-        getCountriesGDP(),
+        GetCountriesPowerUsage(),
         getGeom()
     ])
         .then(([isoCodes, power, json]) => {
             const powerData = power
             .map(({ name, value }) => {
-                const gdp = value ? +value : null;
+                const powerUsage = value ? +value : null;
                 const { code } = isoCodes.find(({ name: codeName, code }) => name.indexOf(codeName) > -1) || {};
-                return { name, value, code };
+                return { name, powerUsage, code };
             })
-            .filter(({ code, value }) => code && value !== null);
+            .filter(({ code, powerUsage }) => code && powerUsage !== null);
 
-        const topoJSON = topojson.feature(json, json.objects["countries"]);
+        const topoJSON = topojson.feature(json, json.objects["world"]);
 
         resolve({
             ...topoJSON,

@@ -2,6 +2,7 @@ import { PureComponent } from 'react';
 import { geoPath, geoOrthographic } from "d3-geo";
 import { withCanvas } from "../../helpers/Canvas";
 import { getTrackballRotation } from "../../helpers/Trackball";
+import { getPowerUsageScale, sortCountriesByPercentage } from "../../helpers/PowerUsageScale";
 import 'inset.js';
 
 class Globe extends PureComponent {
@@ -10,6 +11,8 @@ class Globe extends PureComponent {
         this.state = { ctx: null };
         this.rotationEase = 2;
         this.globe = { type: "Sphere" };
+        this.powerUsageColorScale = getPowerUsageScale(props.topoJSON.features);
+        this.sortedCountries = sortCountriesByPercentage(props.topoJSON.features);
 
         this.mouseMove = this.mouseMove.bind(this);
     }
@@ -92,14 +95,17 @@ class Globe extends PureComponent {
             this.path(this.globe);
             ctx.fill();
 
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            topoJSON.features.forEach((country) => {
-                ctx.fillStyle = "#587c2e";
-                this.path(country);
-            });
-            ctx.fill();
             ctx.shadowInset = false;
+            ctx.shadowBlur = 0;
+
+            Object.entries(this.sortedCountries).forEach(([key, countries]) => {
+                ctx.beginPath();
+                ctx.fillStyle = this.powerUsageColorScale(+key);
+                countries.forEach(c => this.path(c));
+                ctx.fill();
+
+            });
+
 
             ctx.strokeStyle = "#c1c1c1";
             ctx.lineWidth = .25;

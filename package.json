@@ -3,22 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "d3-array": "^1.2.1",
     "d3-geo": "^1.9.1",
     "d3-request": "^1.0.6",
     "d3-scale": "^2.0.0",
+    "d3-scale-chromatic": "^1.2.0",
     "inset.js": "^1.0.2",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "topojson-client": "^3.0.0"
   },
   "devDependencies": {
-    "babel-eslint": "^8.2.1",
+    "babel-eslint": "^7.2.3",
     "eslint": "^4.1.1",
     "eslint-config-react-app": "^2.1.0",
     "eslint-plugin-flowtype": "^2.34.1",
     "eslint-plugin-import": "^2.6.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
-    "eslint-plugin-react": "^7.6.1",
+    "eslint-plugin-react": "^7.1.0",
     "react-scripts": "1.1.0"
   },
   "scripts": {
