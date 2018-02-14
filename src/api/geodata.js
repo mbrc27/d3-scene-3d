@@ -3,7 +3,7 @@ import { csv, json } from "d3-request";
 
 export const getCountriesCodes = () => {
     return new Promise((resolve, reject) => {
-        csv("/iso2codes.csv")
+        csv(`${process.env.PUBLIC_URL}/iso2codes.csv`)
             .get((err, response) => {
                 if (err) reject(new Error("Could not load iso codes"));
                 resolve(response);
@@ -13,7 +13,7 @@ export const getCountriesCodes = () => {
 
 export const GetCountriesPowerUsage = () => {
     return new Promise((resolve, reject) => {
-        csv("/power_cons.csv")
+        csv(`${process.env.PUBLIC_URL}/power_cons.csv`)
             .get((err, response) => {
                 if (err) reject(new Error("Could not load GDP data"));
                 resolve(response);
@@ -23,7 +23,7 @@ export const GetCountriesPowerUsage = () => {
 
 export const getGeom = () => {
     return new Promise((resolve, reject) => {
-        json("/world.topo.json")
+        json(`${process.env.PUBLIC_URL}/world.topo.json`)
             .get((err, response) => {
                 if (err) reject(new Error("Could not countries geometry"));
                 resolve(response);
