@@ -7,23 +7,47 @@ import 'inset.js';
 class Globe extends PureComponent {
     constructor(props) {
         super(props);
-        this.state = { ctx: null };
+        const { width, height } = props;
+        this.state = { ctx: null, translateX: width / 2, translateY: height / 2 };
         this.rotationEase = 2;
         this.powerUsageColorScale = getPowerUsageScale(props.topoJSON.features);
         this.sortedCountries = sortCountriesByPercentage(props.topoJSON.features);
+        this.bindEvents = this.bindEvents.bind(this);
     }
     componentDidMount() {
         const canvas = this.props.getCanvas();
         const ctx = canvas.getContext("2d");
         this.setState(state => ({ ...state, ctx }));
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        const canvas = this.props.getCanvas();
+        const mouseMove = ({ x, y }) => {
+            const { translateX, translateY } = this.state;
+            const [originX, originY] = this.originPosition;
+            this.setState(state => ({
+                ...state,
+                translateX: translateX - (originX - x),
+                translateY: translateY - (originY - y)
+            }));
+            this.originPosition = [x, y];
+        }
+        canvas.addEventListener("mousedown", ({ x, y }) => {
+            this.originPosition = [x, y];
+            canvas.addEventListener("mousemove", mouseMove);
+        });
+        canvas.addEventListener("mouseup", () => {
+            canvas.removeEventListener("mousemove", mouseMove);
+        });
     }
 
     componentWillUpdate(props, state) {
-        const { scale, width, height, rotation } = props;
-        const { ctx } = state;
+        const { scale, rotation } = props;
+        const { ctx, translateX, translateY } = state;
         this.projection = geoMercator()
             .scale(scale)
-            .translate([width / 2, height / 2])
+            .translate([translateX, translateY])
             .rotate(rotation);
 
 
@@ -33,7 +57,7 @@ class Globe extends PureComponent {
     }
 
     render() {
-        const { topoJSON, mapType, width, height } = this.props;
+        const { topoJSON, mapType, width, height, scale } = this.props;
         const { ctx } = this.state;
 
         if (ctx) {
@@ -91,6 +115,17 @@ class Globe extends PureComponent {
             ctx.beginPath();
             this.path(topoJSON);
             ctx.stroke();
+
+            if (scale > 300) {
+                ctx.fillStyle = "black";
+                ctx.font = "10px Arial";
+                topoJSON.features.forEach(feature => {
+                    const [x, y] = this.path.centroid(feature);
+                    const { name, powerUsage } = feature.properties;
+                    ctx.fillText(name || "", x, y);
+                    ctx.fillText(Math.round(powerUsage * 100) / 100 || "", x, y + 20);
+                });
+            }
 
             ctx.restore();
         }
