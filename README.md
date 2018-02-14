@@ -5,6 +5,7 @@ D3 Scene 3D
 This repo shows example of using D3 with an HTML5 Canvas API to create a simple 3D World map. Project is set within react ecosystem (for state management, since Canvas doesn't use an DOM representation) and to create additional navigation component.
 
 ## Installation
+Source code is stored at a `develop` branch.
 App is based on CRA so to install dependencies type:
 ```
 yarn install
