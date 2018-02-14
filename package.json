@@ -2,12 +2,14 @@
   "name": "d3-scene-3d",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://mbrc27.github.io/d3-scene-3d/",
   "dependencies": {
     "d3-array": "^1.2.1",
     "d3-geo": "^1.9.1",
     "d3-request": "^1.0.6",
     "d3-scale": "^2.0.0",
     "d3-scale-chromatic": "^1.2.0",
+    "gh-pages": "^1.1.0",
     "inset.js": "^1.0.2",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
@@ -24,6 +26,8 @@
     "react-scripts": "1.1.0"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -b master -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
