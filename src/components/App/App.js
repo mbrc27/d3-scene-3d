@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import Globe from "../Globe/Globe";
-import Space from "../Space/Space";
 import Navigator from "../Navigator/Navigator";
 import { CanvasProvider } from "../../helpers/Canvas";
 import { getCountriesGeom } from "../../api/geodata";
@@ -61,7 +60,6 @@ class App extends PureComponent {
       <div>
         <Navigator zoomIn={this.zoomIn} zoomOut={this.zoomOut} restore={this.restore} changeMap={this.changeMapType} />
         <CanvasProvider width={width} height={height}>
-          <Space scale={scale} rotation={rotation} />
           <Globe scale={scale} topoJSON={data} rotation={rotation} rotate={this.changeRotation} mapType={type} />
         </CanvasProvider>
       </div>
