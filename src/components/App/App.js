@@ -9,11 +9,12 @@ import './App.css';
 class App extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = { data: null, scale: 200, rotation: [0, 0] };
+    this.state = { data: null, scale: 200, rotation: [0, 0], type: "choropleth" };
     this.zoomIn = this.zoom.bind(this, true);
     this.zoomOut = this.zoom.bind(this, false);
     this.changeRotation = this.changeRotation.bind(this);
     this.restore = this.changeRotation.bind(this, [0, 0]);
+    this.changeMapType = this.changeMapType.bind(this);
   }
 
   componentDidMount() {
@@ -46,17 +47,22 @@ class App extends PureComponent {
     this.setState(state => ({ ...state, rotation }));
   }
 
+  changeMapType({ target }) {
+    const { value: type } = target;
+    this.setState(state => ({ ...state, type }));
+  }
+
   render() {
-    const { data, scale, rotation } = this.state;
+    const { data, scale, rotation, type } = this.state;
     if (!data) return <div>loading...</div>;
     const height = 900;
     const width = 900;
     return (
       <div>
-        <Navigator zoomIn={this.zoomIn} zoomOut={this.zoomOut} restore={this.restore} />
+        <Navigator zoomIn={this.zoomIn} zoomOut={this.zoomOut} restore={this.restore} changeMap={this.changeMapType} />
         <CanvasProvider width={width} height={height}>
           <Space scale={scale} rotation={rotation} />
-          <Globe scale={scale} topoJSON={data} rotation={rotation} rotate={this.changeRotation} />
+          <Globe scale={scale} topoJSON={data} rotation={rotation} rotate={this.changeRotation} mapType={type} />
         </CanvasProvider>
       </div>
     );

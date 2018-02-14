@@ -1,5 +1,5 @@
 import { PureComponent } from 'react';
-import { geoPath, geoOrthographic } from "d3-geo";
+import { geoPath, geoCentroid, geoOrthographic } from "d3-geo";
 import { withCanvas } from "../../helpers/Canvas";
 import { getTrackballRotation } from "../../helpers/Trackball";
 import { getPowerUsageScale, sortCountriesByPercentage } from "../../helpers/PowerUsageScale";
@@ -73,7 +73,7 @@ class Globe extends PureComponent {
     }
 
     render() {
-        const { topoJSON } = this.props;
+        const { topoJSON, mapType } = this.props;
         const { ctx } = this.state;
 
         if (ctx) {
@@ -95,17 +95,41 @@ class Globe extends PureComponent {
             this.path(this.globe);
             ctx.fill();
 
-            ctx.shadowInset = false;
-            ctx.shadowBlur = 0;
 
-            Object.entries(this.sortedCountries).forEach(([key, countries]) => {
+            if (mapType === "choropleth") {
+                ctx.shadowBlur = 0;
+                ctx.shadowInset = false;
+                Object.entries(this.sortedCountries).forEach(([key, countries]) => {
+                    ctx.beginPath();
+                    ctx.fillStyle = this.powerUsageColorScale(+key);
+                    countries.forEach(c => this.path(c));
+                    ctx.fill();
+                });
+            } else {
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = "#8aaa63";
                 ctx.beginPath();
-                ctx.fillStyle = this.powerUsageColorScale(+key);
-                countries.forEach(c => this.path(c));
+                this.path(topoJSON);
                 ctx.fill();
 
-            });
+                ctx.shadowBlur = 0;
+                ctx.shadowInset = false;
 
+                Object.entries(this.sortedCountries).forEach(([key, countries]) => {
+                    const countriesCentroids = countries.map(country => ({
+                        ...country,
+                        geometry: {
+                            type: 'Point',
+                            coordinates: geoCentroid(country)
+                        }
+                    }));
+                    ctx.beginPath();
+                    ctx.fillStyle = this.powerUsageColorScale(+key);
+                    this.path.pointRadius(+key * 0.25 || 2.5);
+                    countriesCentroids.forEach(c => this.path(c));
+                    ctx.fill();
+                });
+            }
 
             ctx.strokeStyle = "#c1c1c1";
             ctx.lineWidth = .25;
