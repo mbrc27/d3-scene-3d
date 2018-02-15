@@ -1,7 +1,7 @@
 import React from 'react';
 import "./Navigator.css";
 
-const Navigator = ({ zoomIn, zoomOut, restore, changeMap }) => {
+const Navigator = ({ zoomIn, zoomOut, restore, changeMap, changeProjection }) => {
     return (
         <div className="navigator">
             <button className="navigator__btn" onClick={zoomIn}>+</button>
@@ -10,6 +10,10 @@ const Navigator = ({ zoomIn, zoomOut, restore, changeMap }) => {
             <select className="navigator__select" onChange={changeMap}>
                 <option value="choropleth">Choropleth map</option>
                 <option value="bubble">Bubble map</option>
+            </select>
+            <select className="navigator__select" onChange={changeProjection}>
+                <option value="orthographic">Orthographic</option>
+                <option value="mercator">Mercator</option>
             </select>
         </div>
     );

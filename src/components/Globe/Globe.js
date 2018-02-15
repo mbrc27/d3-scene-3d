@@ -1,6 +1,7 @@
 import { PureComponent } from 'react';
-import { geoPath, geoCentroid, geoMercator } from "d3-geo";
+import { geoPath, geoCentroid } from "d3-geo";
 import { withCanvas } from "../../helpers/Canvas";
+import { MapNavigation } from "../../helpers/MapNavigation";
 import { getPowerUsageScale, sortCountriesByPercentage } from "../../helpers/PowerUsageScale";
 import 'inset.js';
 
@@ -9,60 +10,39 @@ class Globe extends PureComponent {
         super(props);
         const { width, height } = props;
         this.state = { ctx: null, translateX: width / 2, translateY: height / 2 };
-        this.rotationEase = 2;
         this.powerUsageColorScale = getPowerUsageScale(props.topoJSON.features);
         this.sortedCountries = sortCountriesByPercentage(props.topoJSON.features);
-        this.bindEvents = this.bindEvents.bind(this);
     }
     componentDidMount() {
         const canvas = this.props.getCanvas();
         const ctx = canvas.getContext("2d");
         this.setState(state => ({ ...state, ctx }));
-        this.bindEvents();
-    }
-
-    bindEvents() {
-        const canvas = this.props.getCanvas();
-        const mouseMove = ({ x, y }) => {
-            const { translateX, translateY } = this.state;
-            const [originX, originY] = this.originPosition;
-            this.setState(state => ({
-                ...state,
-                translateX: translateX - (originX - x),
-                translateY: translateY - (originY - y)
-            }));
-            this.originPosition = [x, y];
-        }
-        canvas.addEventListener("mousedown", ({ x, y }) => {
-            this.originPosition = [x, y];
-            canvas.addEventListener("mousemove", mouseMove);
-        });
-        canvas.addEventListener("mouseup", () => {
-            canvas.removeEventListener("mousemove", mouseMove);
-        });
     }
 
     componentWillUpdate(props, state) {
-        const { scale, rotation } = props;
-        const { ctx, translateX, translateY } = state;
-        this.projection = geoMercator()
-            .scale(scale)
-            .translate([translateX, translateY])
-            .rotate(rotation);
-
-
+        const { projection } = props;
+        const { ctx } = state;
         this.path = geoPath()
-            .projection(this.projection)
+            .projection(projection)
             .context(ctx);
     }
 
     render() {
-        const { topoJSON, mapType, width, height, scale } = this.props;
+        const { topoJSON, mapType, projectionType, width, height, scale } = this.props;
         const { ctx } = this.state;
 
         if (ctx) {
-            ctx.clearRect(0, 0, width, height);
+            projectionType === "mercator" && ctx.clearRect(0, 0, width, height);
             ctx.save();
+
+            ctx.fillStyle = "#053367";
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = "white";
+            ctx.beginPath();
+            this.path(this.globe);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
             ctx.fillStyle = "#053367";
             ctx.shadowInset = true;
             ctx.shadowBlur = 95;
@@ -134,4 +114,4 @@ class Globe extends PureComponent {
     }
 }
 
-export default withCanvas(Globe);
+export default withCanvas(MapNavigation(Globe));

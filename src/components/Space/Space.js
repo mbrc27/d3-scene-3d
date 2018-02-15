@@ -42,7 +42,7 @@ class Space extends PureComponent {
         const { ctx, stars } = this.state;
         const { width, height } = this.props;
 
-        if (ctx) {
+        if (ctx && this.props.projectionType !== "mercator") {
             ctx.clearRect(0, 0, width, height);
             ctx.save();
 
