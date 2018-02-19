@@ -9,12 +9,13 @@ import './App.css';
 class App extends PureComponent {
   constructor(props) {
     super(props);
+    const [type = "choropleth", projectionType = "orthographic"] = this.checkHashParam();
     this.state = {
       data: null,
       scale: 200,
       rotation: [0, 0],
-      type: "choropleth",
-      projectionType: "orthographic"
+      type,
+      projectionType
     };
     this.zoomIn = this.zoom.bind(this, true);
     this.zoomOut = this.zoom.bind(this, false);
@@ -47,6 +48,12 @@ class App extends PureComponent {
         state.scale + scaleAdjust :
         Math.max(state.scale - scaleAdjust, 200)
     }))
+  }
+
+  checkHashParam() {
+    const { hash } = window.location;
+
+    return hash ? hash.replace("#", "").split("/") : "";
   }
 
   changeRotation(rotation) {
