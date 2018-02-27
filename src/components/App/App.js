@@ -3,6 +3,7 @@ import Globe from "../Globe/Globe";
 import Space from "../Space/Space";
 import Navigator from "../Navigator/Navigator";
 import { CanvasProvider } from "../../helpers/Canvas";
+import ResponsiveWrapper from "../../helpers/ResponsiveWrapper";
 import { getCountriesGeom } from "../../api/geodata";
 import './App.css';
 
@@ -73,8 +74,11 @@ class App extends PureComponent {
   render() {
     const { data, scale, rotation, type, projectionType } = this.state;
     if (!data) return <div>loading...</div>;
-    const height = 900;
-    const width = 900;
+    const { parentWidth, parentHeight } = this.props;
+    const dimensions = {
+      width: Math.min(parentWidth, 900) || 900,
+      height: Math.min(parentHeight, 900) || 900
+  };
     return (
       <div className={`map--${projectionType}`}>
         <Navigator
@@ -84,8 +88,8 @@ class App extends PureComponent {
           changeMap={this.changeMapType}
           changeProjection={this.changeMapProjection}
         />
-        <CanvasProvider width={width} height={height}>
-          <Space scale={scale} rotation={rotation} projectionType={projectionType} mapType={type}/>
+        <CanvasProvider width={dimensions.width} height={dimensions.height}>
+          <Space scale={scale} rotation={rotation} projectionType={projectionType} mapType={type} />
           <Globe
             scale={scale}
             topoJSON={data}
@@ -100,4 +104,4 @@ class App extends PureComponent {
   }
 }
 
-export default App;
+export default ResponsiveWrapper(App);
