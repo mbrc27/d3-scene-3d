@@ -6,12 +6,13 @@ export const MapNavigation = EnchancedComponent => (
     class MapNavigation extends PureComponent {
         constructor(props) {
             super(props);
+            const { rotation } = props;
             this.rotationEase = 2;
 
             this.state = {
                 translateX: 0,
                 translateY: 0,
-                rotation: [0, 0]
+                rotation
             };
             this.bindEvents = this.bindEvents.bind(this);
             this.mouseMove = this.mouseMove.bind(this);
@@ -30,14 +31,14 @@ export const MapNavigation = EnchancedComponent => (
 
 
         componentWillReceiveProps(nextProps) {
-            if (nextProps.rotation !== this.props.rotation) {
+            if (nextProps.rotation !== this.state.rotation) {
                 this.setState(state => ({ ...state, rotation: nextProps.rotation }));
             }
         }
 
         componentWillUpdate(props, state) {
-            const { scale, rotation, projectionType } = props;
-            const { translateX, translateY } = state;
+            const { scale, projectionType } = props;
+            const { translateX, translateY, rotation } = state;
             this.projection = projectionType === "orthographic" ? geoOrthographic() : geoMercator();
 
             this.projection.scale(scale)
@@ -75,7 +76,7 @@ export const MapNavigation = EnchancedComponent => (
                 this.setState(state => ({
                     ...state,
                     rotation
-                }));
+                }), this.props.setRotation(rotation));
             } else {
                 const [originX, originY] = this.originPosition;
                 this.setState(state => ({

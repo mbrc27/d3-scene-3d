@@ -9,6 +9,7 @@ class Globe extends PureComponent {
     constructor(props) {
         super(props);
         const { width, height } = props;
+        this.globe = { type: 'Sphere' };
         this.state = { ctx: null, translateX: width / 2, translateY: height / 2 };
         this.powerUsageColorScale = getPowerUsageScale(props.topoJSON.features);
         this.sortedCountries = sortCountriesByPercentage(props.topoJSON.features);

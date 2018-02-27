@@ -20,6 +20,7 @@ class App extends PureComponent {
     this.zoomIn = this.zoom.bind(this, true);
     this.zoomOut = this.zoom.bind(this, false);
     this.restore = this.changeRotation.bind(this, [0, 0]);
+    this.changeRotation = this.changeRotation.bind(this);
     this.changeMapType = this.changeMapType.bind(this);
     this.changeMapProjection = this.changeMapProjection.bind(this);
   }
@@ -84,13 +85,14 @@ class App extends PureComponent {
           changeProjection={this.changeMapProjection}
         />
         <CanvasProvider width={width} height={height}>
-          <Space scale={scale} rotation={rotation} projectionType={projectionType} />
+          <Space scale={scale} rotation={rotation} projectionType={projectionType} mapType={type}/>
           <Globe
             scale={scale}
             topoJSON={data}
             rotation={rotation}
             mapType={type}
             projectionType={projectionType}
+            setRotation={this.changeRotation}
           />
         </CanvasProvider>
       </div>
