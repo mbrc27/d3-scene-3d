@@ -23,6 +23,11 @@ class Space extends PureComponent {
 
     this.state = { stars };
   }
+  componentDidMount() {
+    const canvas = this.props.getCanvas();
+    const ctx = canvas.getContext('2d');
+    this.setState(state => ({ ...state, ctx }));
+  }
 
   componentWillReceiveProps(nextProps) {
     const { mapType } = this.props;
@@ -45,13 +50,10 @@ class Space extends PureComponent {
   }
 
   render() {
-    const { stars } = this.state;
+    const { stars, ctx } = this.state;
     const { width, height, projectionType } = this.props;
 
-    const canvas = this.props.getCanvas();
-    if (canvas && projectionType !== 'mercator') {
-      const ctx = canvas.getContext('2d');
-
+    if (ctx && projectionType !== 'mercator') {
       ctx.clearRect(0, 0, width, height);
       ctx.save();
 

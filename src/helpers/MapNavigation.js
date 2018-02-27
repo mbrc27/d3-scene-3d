@@ -7,7 +7,7 @@ export const MapNavigation = (EnchancedComponent) => {
   class MapNav extends PureComponent {
     constructor(props) {
       super(props);
-      const { rotation } = props;
+      const { rotation, projectionType, scale } = props;
       this.rotationEase = 2;
 
       this.state = {
@@ -15,6 +15,12 @@ export const MapNavigation = (EnchancedComponent) => {
         translateY: 0,
         rotation,
       };
+      this.projection = projectionType === 'orthographic' ? geoOrthographic() : geoMercator();
+
+      this.projection.scale(scale)
+        .translate([0, 0])
+        .rotate(rotation);
+
       this.bindEvents = this.bindEvents.bind(this);
       this.mouseMove = this.mouseMove.bind(this);
     }
@@ -105,7 +111,8 @@ export const MapNavigation = (EnchancedComponent) => {
   MapNav.propTypes = {
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
-    rotation: PropTypes.number.isRequired,
+    scale: PropTypes.number.isRequired,
+    rotation: PropTypes.arrayOf(PropTypes.number).isRequired,
     projectionType: PropTypes.string.isRequired,
     getCanvas: PropTypes.func.isRequired,
     setRotation: PropTypes.func.isRequired,

@@ -51,7 +51,7 @@ CanvasProvider.defaultProps = {
 CanvasProvider.propTypes = {
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
-  children: PropTypes.element,
+  children: PropTypes.arrayOf(PropTypes.element),
 };
 
 CanvasProvider.childContextTypes = {

@@ -10,47 +10,53 @@ class Globe extends PureComponent {
   constructor(props) {
     super(props);
     const { topoJSON } = props;
+    this.state = { ctx: null };
     this.globe = { type: 'Sphere' };
     this.powerUsageColorScale = getPowerUsageScale(topoJSON.features);
     this.sortedCountries = sortCountriesByPercentage(topoJSON.features);
   }
 
-  componentWillUpdate(props) {
+  componentDidMount() {
     const canvas = this.props.getCanvas();
     const ctx = canvas.getContext('2d');
+    this.setState(state => ({ ...state, ctx }));
+  }
+
+  componentWillUpdate(props, state) {
     const { projection } = props;
+    const { ctx } = state;
+
     this.path = geoPath()
       .projection(projection)
       .context(ctx);
   }
 
   render() {
+    const { ctx } = this.state;
     const {
       topoJSON, mapType, projectionType, width, height, scale,
     } = this.props;
-    const canvas = this.props.getCanvas();
 
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
+    if (ctx) {
       if (projectionType === 'mercator') ctx.clearRect(0, 0, width, height);
       ctx.save();
+      if (projectionType !== 'mercator') {
+        ctx.fillStyle = '#053367';
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = 'white';
+        ctx.beginPath();
+        this.path(this.globe);
+        ctx.fill();
+        ctx.shadowBlur = 0;
 
-      ctx.fillStyle = '#053367';
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = 'white';
-      ctx.beginPath();
-      this.path(this.globe);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      ctx.fillStyle = '#053367';
-      ctx.shadowInset = true;
-      ctx.shadowBlur = 95;
-      ctx.shadowColor = 'black';
-      ctx.beginPath();
-      this.path(this.globe);
-      ctx.fill();
-
+        ctx.fillStyle = '#053367';
+        ctx.shadowInset = true;
+        ctx.shadowBlur = 95;
+        ctx.shadowColor = 'black';
+        ctx.beginPath();
+        this.path(this.globe);
+        ctx.fill();
+      }
 
       if (mapType === 'choropleth') {
         ctx.shadowBlur = 0;
@@ -124,6 +130,7 @@ Globe.propTypes = {
   topoJSON: PropTypes.objectOf(PropTypes.oneOfType([
     PropTypes.object,
     PropTypes.string,
+    PropTypes.array,
   ])).isRequired,
 };
 
