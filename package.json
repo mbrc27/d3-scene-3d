@@ -11,8 +11,11 @@
     "d3-scale-chromatic": "^1.2.0",
     "gh-pages": "^1.1.0",
     "inset.js": "^1.0.2",
+    "prop-types": "^15.6.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-redux": "^5.0.7",
+    "redux": "^3.7.2",
     "topojson-client": "^3.0.0"
   },
   "devDependencies": {

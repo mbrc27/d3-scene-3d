@@ -1,22 +1,28 @@
 import React, { PureComponent } from 'react';
-import Globe from "../Globe/Globe";
-import Space from "../Space/Space";
-import Navigator from "../Navigator/Navigator";
-import { CanvasProvider } from "../../helpers/Canvas";
-import ResponsiveWrapper from "../../helpers/ResponsiveWrapper";
-import { getCountriesGeom } from "../../api/geodata";
+import PropTypes from 'prop-types';
+import Globe from '../Globe/Globe';
+import Space from '../Space/Space';
+import Navigator from '../Navigator/Navigator';
+import { CanvasProvider } from '../../helpers/Canvas';
+import ResponsiveWrapper from '../../helpers/ResponsiveWrapper';
+import { getCountriesGeom } from '../../api/geodata';
 import './App.css';
 
 class App extends PureComponent {
+  static checkHashParam() {
+    const { hash } = window.location;
+
+    return hash ? hash.replace('#', '').split('/') : '';
+  }
   constructor(props) {
     super(props);
-    const [type = "choropleth", projectionType = "orthographic"] = this.checkHashParam();
+    const [type = 'choropleth', projectionType = 'orthographic'] = App.checkHashParam();
     this.state = {
       data: null,
       scale: 200,
       rotation: [0, 0],
       type,
-      projectionType
+      projectionType,
     };
     this.zoomIn = this.zoom.bind(this, true);
     this.zoomOut = this.zoom.bind(this, false);
@@ -32,30 +38,25 @@ class App extends PureComponent {
         this.setState(state => ({ ...state, data }));
       })
       .catch((error) => {
-        this.setState(state => {
+        this.setState(() => {
           throw new Error(error);
         });
       });
 
-    window.addEventListener("mousewheel", ({ deltaY }) => {
+    window.addEventListener('mousewheel', ({ deltaY }) => {
       const zoomIn = deltaY < 0;
       this.zoom(zoomIn);
-    })
+    });
   }
 
   zoom(zoomIn = false) {
     const scaleAdjust = 100;
     this.setState(state => ({
-      ...state, scale: zoomIn ?
+      ...state,
+      scale: zoomIn ?
         state.scale + scaleAdjust :
-        Math.max(state.scale - scaleAdjust, 200)
-    }))
-  }
-
-  checkHashParam() {
-    const { hash } = window.location;
-
-    return hash ? hash.replace("#", "").split("/") : "";
+        Math.max(state.scale - scaleAdjust, 200),
+    }));
   }
 
   changeRotation(rotation) {
@@ -72,13 +73,15 @@ class App extends PureComponent {
   }
 
   render() {
-    const { data, scale, rotation, type, projectionType } = this.state;
+    const {
+      data, scale, rotation, type, projectionType,
+    } = this.state;
     if (!data) return <div>loading...</div>;
     const { parentWidth, parentHeight } = this.props;
     const dimensions = {
       width: Math.min(parentWidth, 900) || 900,
-      height: Math.min(parentHeight, 900) || 900
-  };
+      height: Math.min(parentHeight, 900) || 900,
+    };
     return (
       <div className={`map--${projectionType}`}>
         <Navigator
@@ -103,5 +106,10 @@ class App extends PureComponent {
     );
   }
 }
+
+App.propTypes = {
+  parentWidth: PropTypes.number.isRequired,
+  parentHeight: PropTypes.number.isRequired,
+};
 
 export default ResponsiveWrapper(App);
