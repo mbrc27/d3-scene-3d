@@ -1,5 +1,11 @@
 {
     "extends": "airbnb",
+    "parser": "babel-eslint",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
     "env": {
         "browser": true,
         "jest": true
@@ -20,6 +26,7 @@
                 "allowTernary": true,
                 "allowShortCircuit": true
             }
-        ]
+        ],
+        "function-paren-newline": "off"
     }
 }

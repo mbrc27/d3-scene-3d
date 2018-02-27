@@ -2,8 +2,6 @@ import 'inset.js';
 import { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { geoPath, geoCentroid } from 'd3-geo';
-import { withCanvas } from '../../helpers/Canvas';
-import { MapNavigation } from '../../helpers/MapNavigation';
 import { getPowerUsageScale, sortCountriesByPercentage } from '../../helpers/PowerUsageScale';
 
 class Globe extends PureComponent {
@@ -12,8 +10,10 @@ class Globe extends PureComponent {
     const { topoJSON } = props;
     this.state = { ctx: null };
     this.globe = { type: 'Sphere' };
-    this.powerUsageColorScale = getPowerUsageScale(topoJSON.features);
-    this.sortedCountries = sortCountriesByPercentage(topoJSON.features);
+    if (topoJSON) {
+      this.powerUsageColorScale = getPowerUsageScale(topoJSON.features);
+      this.sortedCountries = sortCountriesByPercentage(topoJSON.features);
+    }
   }
 
   componentDidMount() {
@@ -23,12 +23,19 @@ class Globe extends PureComponent {
   }
 
   componentWillUpdate(props, state) {
-    const { projection } = props;
+    const { projection, topoJSON } = props;
     const { ctx } = state;
 
-    this.path = geoPath()
-      .projection(projection)
-      .context(ctx);
+    if (topoJSON && !this.powerUsageColorScale) {
+      this.powerUsageColorScale = getPowerUsageScale(topoJSON.features);
+      this.sortedCountries = sortCountriesByPercentage(topoJSON.features);
+    }
+
+    if (projection) {
+      this.path = geoPath()
+        .projection(projection)
+        .context(ctx);
+    }
   }
 
   render() {
@@ -37,7 +44,7 @@ class Globe extends PureComponent {
       topoJSON, mapType, projectionType, width, height, scale,
     } = this.props;
 
-    if (ctx) {
+    if (ctx && topoJSON && this.path) {
       if (projectionType === 'mercator') ctx.clearRect(0, 0, width, height);
       ctx.save();
       if (projectionType !== 'mercator') {
@@ -134,4 +141,4 @@ Globe.propTypes = {
   ])).isRequired,
 };
 
-export default withCanvas(MapNavigation(Globe));
+export default Globe;

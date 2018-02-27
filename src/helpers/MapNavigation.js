@@ -5,54 +5,29 @@ import { getTrackballRotation } from './Trackball';
 
 export const MapNavigation = (EnchancedComponent) => {
   class MapNav extends PureComponent {
-    constructor(props) {
-      super(props);
-      const { rotation, projectionType, scale } = props;
-      this.rotationEase = 2;
-
-      this.state = {
-        translateX: 0,
-        translateY: 0,
-        rotation,
-      };
-      this.projection = projectionType === 'orthographic' ? geoOrthographic() : geoMercator();
-
-      this.projection.scale(scale)
-        .translate([0, 0])
-        .rotate(rotation);
-
-      this.bindEvents = this.bindEvents.bind(this);
-      this.mouseMove = this.mouseMove.bind(this);
-    }
     componentDidMount() {
+      this.rotationEase = 2;
+      const { width, height } = this.props;
       this.bindEvents();
+      this.setProjection(this.props);
+      this.props.changePosition([width / 2, height / 2]);
     }
 
-    componentWillReceiveProps(nextProps) {
-      const { width, height, rotation } = nextProps;
-      let { state: newState } = this.state;
-      if (rotation !== this.state.rotation) {
-        newState = { ...newState, rotation: nextProps.rotation };
-      }
-      this.setState(state => ({
-        ...state,
-        ...newState,
-        translateX: width / 2,
-        translateY: height / 2,
-      }));
+    componentWillUpdate(props) {
+      this.setProjection(props);
+      this.trackballRotation = getTrackballRotation(this.projection);
     }
 
-
-    componentWillUpdate(props, state) {
-      const { scale, projectionType } = props;
-      const { translateX, translateY, rotation } = state;
+    setProjection = (props) => {
+      const {
+        projectionType, scale, rotation, translate,
+      } = props;
       this.projection = projectionType === 'orthographic' ? geoOrthographic() : geoMercator();
-
       this.projection.scale(scale)
-        .translate([translateX, translateY])
+        .translate(translate)
         .rotate(rotation);
 
-      this.trackballRotation = getTrackballRotation(this.projection);
+      return this.projection;
     }
 
     bindEvents() {
@@ -69,53 +44,49 @@ export const MapNavigation = (EnchancedComponent) => {
       });
     }
 
-    mouseMove({ x, y }) {
-      const { translateX, translateY } = this.state;
-      const { projectionType } = this.props;
+    mouseMove = ({ x, y }) => {
+      const { projectionType, translate } = this.props;
+      const [translateX, translateY] = translate;
+
       if (projectionType === 'orthographic') {
         const originRotation = this.projection.rotate();
         const rotation = this.trackballRotation(
           originRotation,
           this.originCoords, [x / this.rotationEase, y / this.rotationEase],
         );
-
-        this.setState(state => ({
-          ...state,
-          rotation,
-        }), this.props.setRotation(rotation));
+        this.props.changeRotation(rotation);
       } else {
         const [originX, originY] = this.originPosition;
-        this.setState(state => ({
-          ...state,
-          translateX: translateX - (originX - x),
-          translateY: translateY - (originY - y),
-        }));
+        this.props.changePosition([translateX - (originX - x), translateY - (originY - y)]);
         this.originPosition = [x, y];
       }
     }
 
     render() {
-      const { translateX, translateY, rotation } = this.state;
       return (
         <EnchancedComponent
           {...this.props}
-          translateX={translateX}
-          translateY={translateY}
-          rotation={rotation}
           projection={this.projection}
         />
       );
     }
   }
 
+  MapNav.defaultProps = {
+    translate: [0, 0],
+    changePosition: () => { },
+  };
+
   MapNav.propTypes = {
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
     scale: PropTypes.number.isRequired,
     rotation: PropTypes.arrayOf(PropTypes.number).isRequired,
+    translate: PropTypes.arrayOf(PropTypes.number),
     projectionType: PropTypes.string.isRequired,
     getCanvas: PropTypes.func.isRequired,
-    setRotation: PropTypes.func.isRequired,
+    changeRotation: PropTypes.func.isRequired,
+    changePosition: PropTypes.func,
   };
 
   return MapNav;
