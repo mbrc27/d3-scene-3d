@@ -9,11 +9,20 @@ import './App.css';
 class App extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = { data: null, scale: 200, rotation: [0, 0] };
+    const [type = "choropleth", projectionType = "orthographic"] = this.checkHashParam();
+    this.state = {
+      data: null,
+      scale: 200,
+      rotation: [0, 0],
+      type,
+      projectionType
+    };
     this.zoomIn = this.zoom.bind(this, true);
     this.zoomOut = this.zoom.bind(this, false);
-    this.changeRotation = this.changeRotation.bind(this);
     this.restore = this.changeRotation.bind(this, [0, 0]);
+    this.changeRotation = this.changeRotation.bind(this);
+    this.changeMapType = this.changeMapType.bind(this);
+    this.changeMapProjection = this.changeMapProjection.bind(this);
   }
 
   componentDidMount() {
@@ -42,21 +51,49 @@ class App extends PureComponent {
     }))
   }
 
+  checkHashParam() {
+    const { hash } = window.location;
+
+    return hash ? hash.replace("#", "").split("/") : "";
+  }
+
   changeRotation(rotation) {
     this.setState(state => ({ ...state, rotation }));
   }
 
+  changeMapType({ target }) {
+    const { value: type } = target;
+    this.setState(state => ({ ...state, type }));
+  }
+  changeMapProjection({ target }) {
+    const { value: projectionType } = target;
+    this.setState(state => ({ ...state, projectionType }));
+  }
+
   render() {
-    const { data, scale, rotation } = this.state;
+    const { data, scale, rotation, type, projectionType } = this.state;
     if (!data) return <div>loading...</div>;
     const height = 900;
     const width = 900;
     return (
-      <div>
-        <Navigator zoomIn={this.zoomIn} zoomOut={this.zoomOut} restore={this.restore} />
+      <div className={`map--${projectionType}`}>
+        <Navigator
+          zoomIn={this.zoomIn}
+          zoomOut={this.zoomOut}
+          restore={this.restore}
+          changeMap={this.changeMapType}
+          changeProjection={this.changeMapProjection}
+        />
         <CanvasProvider width={width} height={height}>
-          <Space scale={scale} rotation={rotation} />
-          <Globe scale={scale} topoJSON={data} rotation={rotation} rotate={this.changeRotation} />
+          <Space scale={scale} rotation={rotation} projectionType={projectionType} mapType={type}/>
+          <Globe
+            scale={scale}
+            topoJSON={data}
+            rotation={rotation}
+            mapType={type}
+            projectionType={projectionType}
+            setRotation={this.changeRotation}
+          />
         </CanvasProvider>
       </div>
     );

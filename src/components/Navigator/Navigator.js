@@ -1,12 +1,20 @@
 import React from 'react';
 import "./Navigator.css";
 
-const Navigator = ({ zoomIn, zoomOut, restore }) => {
+const Navigator = ({ zoomIn, zoomOut, restore, changeMap, changeProjection }) => {
     return (
         <div className="navigator">
             <button className="navigator__btn" onClick={zoomIn}>+</button>
             <button className="navigator__btn" onClick={zoomOut}>-</button>
             <button className="navigator__btn" onClick={restore}>↩</button>
+            <select className="navigator__select" onChange={changeMap}>
+                <option value="choropleth">Choropleth map</option>
+                <option value="bubble">Bubble map</option>
+            </select>
+            <select className="navigator__select" onChange={changeProjection}>
+                <option value="orthographic">Orthographic</option>
+                <option value="mercator">Mercator</option>
+            </select>
         </div>
     );
 };

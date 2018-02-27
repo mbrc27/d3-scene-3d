@@ -1,82 +1,39 @@
 import { PureComponent } from 'react';
-import { geoPath, geoOrthographic } from "d3-geo";
+import { geoPath, geoCentroid } from "d3-geo";
 import { withCanvas } from "../../helpers/Canvas";
-import { getTrackballRotation } from "../../helpers/Trackball";
+import { MapNavigation } from "../../helpers/MapNavigation";
 import { getPowerUsageScale, sortCountriesByPercentage } from "../../helpers/PowerUsageScale";
 import 'inset.js';
 
 class Globe extends PureComponent {
     constructor(props) {
         super(props);
-        this.state = { ctx: null };
-        this.rotationEase = 2;
-        this.globe = { type: "Sphere" };
+        const { width, height } = props;
+        this.globe = { type: 'Sphere' };
+        this.state = { ctx: null, translateX: width / 2, translateY: height / 2 };
         this.powerUsageColorScale = getPowerUsageScale(props.topoJSON.features);
         this.sortedCountries = sortCountriesByPercentage(props.topoJSON.features);
-
-        this.mouseMove = this.mouseMove.bind(this);
     }
     componentDidMount() {
         const canvas = this.props.getCanvas();
         const ctx = canvas.getContext("2d");
-        this.bindEvents();
         this.setState(state => ({ ...state, ctx }));
     }
 
-    bindEvents(unbind = false) {
-        const canvas = this.props.getCanvas();
-
-        const mouseDown = ({ clientX, clientY }) => {
-            this.originCoords = [clientX / this.rotationEase, clientY / this.rotationEase];
-            canvas.addEventListener("mousemove", this.mouseMove);
-        }
-
-        const mouseUp = () => {
-            this.originCoords = [0, 0];
-            canvas.removeEventListener("mousemove", this.mouseMove);
-        }
-        if (!unbind) {
-            canvas.addEventListener("mousedown", mouseDown);
-            canvas.addEventListener("mouseup", mouseUp);
-        } else {
-            canvas.removeEventListener("mousedown", mouseDown);
-            canvas.removeEventListener("mouseup", mouseUp);
-        }
-    }
-
-    mouseMove(evt) {
-        const { clientX, clientY } = evt;
-        const originRotation = this.projection.rotate();
-        const rotation = this.trackballRotation(originRotation, this.originCoords, [clientX / this.rotationEase, clientY / this.rotationEase]);
-
-        this.props.rotate(rotation);
-    }
-
-    componentWillUnmount() {
-        this.bindEvents(true);
-    }
-
     componentWillUpdate(props, state) {
-        const { scale, width, height, rotation } = props;
+        const { projection } = props;
         const { ctx } = state;
-        this.projection = geoOrthographic()
-            .scale(scale)
-            .translate([width / 2, height / 2])
-            .rotate(rotation);
-
-
         this.path = geoPath()
-            .projection(this.projection)
+            .projection(projection)
             .context(ctx);
-
-        this.trackballRotation = getTrackballRotation(this.projection);
     }
 
     render() {
-        const { topoJSON } = this.props;
+        const { topoJSON, mapType, projectionType, width, height, scale } = this.props;
         const { ctx } = this.state;
 
         if (ctx) {
+            projectionType === "mercator" && ctx.clearRect(0, 0, width, height);
             ctx.save();
 
             ctx.fillStyle = "#053367";
@@ -95,23 +52,61 @@ class Globe extends PureComponent {
             this.path(this.globe);
             ctx.fill();
 
-            ctx.shadowInset = false;
-            ctx.shadowBlur = 0;
 
-            Object.entries(this.sortedCountries).forEach(([key, countries]) => {
+            if (mapType === "choropleth") {
+                ctx.shadowBlur = 0;
+                ctx.shadowInset = false;
+                Object.entries(this.sortedCountries).forEach(([key, countries]) => {
+                    ctx.beginPath();
+                    ctx.fillStyle = this.powerUsageColorScale(+key);
+                    countries.forEach(c => this.path(c));
+                    ctx.fill();
+                });
+            } else {
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = "#8aaa63";
                 ctx.beginPath();
-                ctx.fillStyle = this.powerUsageColorScale(+key);
-                countries.forEach(c => this.path(c));
+                this.path(topoJSON);
                 ctx.fill();
 
-            });
+                ctx.shadowBlur = 0;
+                ctx.shadowInset = false;
+                ctx.globalAlpha = 0.7;
 
+                Object.entries(this.sortedCountries).forEach(([key, countries]) => {
+                    const countriesCentroids = countries.map(country => ({
+                        ...country,
+                        geometry: {
+                            type: 'Point',
+                            coordinates: geoCentroid(country)
+                        }
+                    }));
+                    ctx.beginPath();
+                    ctx.fillStyle = this.powerUsageColorScale(+key);
+                    this.path.pointRadius(+key * 0.25 || 2.5);
+                    countriesCentroids.forEach(c => this.path(c));
+                    ctx.fill();
+                });
+
+                ctx.globalAlpha = 1;
+            }
 
             ctx.strokeStyle = "#c1c1c1";
             ctx.lineWidth = .25;
             ctx.beginPath();
             this.path(topoJSON);
             ctx.stroke();
+
+            if (scale > 300) {
+                ctx.fillStyle = "black";
+                ctx.font = "10px Arial";
+                topoJSON.features.forEach(feature => {
+                    const [x, y] = this.path.centroid(feature);
+                    const { name, powerUsage } = feature.properties;
+                    ctx.fillText(name || "", x, y);
+                    ctx.fillText(Math.round(powerUsage * 100) / 100 || "", x, y + 20);
+                });
+            }
 
             ctx.restore();
         }
@@ -120,4 +115,4 @@ class Globe extends PureComponent {
     }
 }
 
-export default withCanvas(Globe);
+export default withCanvas(MapNavigation(Globe));

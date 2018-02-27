@@ -9,6 +9,19 @@
     cursor: pointer;
     font-size: 15px;
     font-weight: bolder;
-    padding: 20px;
+    padding: 10px;
+    margin: 10px 5px 20px 10px;
+}
+
+.navigator__select {
+    background: white;
+    border: 0;
+    /* border-bottom: 2px solid #bababa; */
+    border-radius: 0;
+    box-shadow: 0 0 3px 3px #bababa;
+    font-size: 15px;
+    font-weight: bolder;
+    letter-spacing: .15em;
+    padding: 10px;
     margin: 10px 5px 20px 10px;
 }

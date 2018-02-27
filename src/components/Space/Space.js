@@ -38,11 +38,16 @@ class Space extends PureComponent {
             .context(ctx);
     }
 
+    componentWillReceiveProps(nextProps) {
+        const { mapType } = this.props;
+        mapType !== nextProps.mapType  && this.forceUpdate();
+    }
+
     render() {
         const { ctx, stars } = this.state;
-        const { width, height } = this.props;
+        const { width, height, projectionType } = this.props;
 
-        if (ctx) {
+        if (ctx && projectionType !== "mercator") {
             ctx.clearRect(0, 0, width, height);
             ctx.save();
 
