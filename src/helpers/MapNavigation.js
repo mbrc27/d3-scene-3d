@@ -11,11 +11,18 @@ export const MapNavigation = (EnchancedComponent) => {
       this.bindEvents();
       this.setProjection(this.props);
       this.props.changePosition([width / 2, height / 2]);
+      this.trackballRotation = getTrackballRotation(this.projection);
     }
 
     componentWillUpdate(props) {
-      this.setProjection(props);
-      this.trackballRotation = getTrackballRotation(this.projection);
+      const { width, height, projectionType } = props;
+
+      if (projectionType !== this.props.projectionType) {
+        this.props.resetProjection([width / 2, height / 2]);
+      } else {
+        this.setProjection(props);
+        this.trackballRotation = getTrackballRotation(this.projection);
+      }
     }
 
     setProjection = (props) => {
@@ -75,6 +82,7 @@ export const MapNavigation = (EnchancedComponent) => {
   MapNav.defaultProps = {
     translate: [0, 0],
     changePosition: () => { },
+    resetProjection: () => { },
   };
 
   MapNav.propTypes = {
@@ -87,6 +95,7 @@ export const MapNavigation = (EnchancedComponent) => {
     getCanvas: PropTypes.func.isRequired,
     changeRotation: PropTypes.func.isRequired,
     changePosition: PropTypes.func,
+    resetProjection: PropTypes.func,
   };
 
   return MapNav;

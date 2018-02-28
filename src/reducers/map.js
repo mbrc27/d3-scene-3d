@@ -5,10 +5,11 @@ import {
   MAP_TYPE,
   ZOOM_IN,
   ZOOM_OUT,
+  RESET_PROJECTION,
 } from '../actions/map';
 import { checkHashParam } from '../helpers/utils';
 
-const [mapType, projectionType] = checkHashParam();
+const [mapType = 'choropleth', projectionType = 'orthographic'] = checkHashParam();
 const initialState = {
   rotation: [0, 0],
   projectionType,
@@ -31,6 +32,8 @@ export default (state = initialState, { type, payload }) => {
       return { ...state, scale: state.scale + 100 };
     case ZOOM_OUT:
       return { ...state, scale: state.scale - 100 };
+    case RESET_PROJECTION:
+      return { ...state, rotation: [0,0], translate: payload };
     default:
       return state;
   }

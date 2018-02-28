@@ -5,6 +5,7 @@ export const ZOOM_IN = 'ZOOM_IN';
 export const ZOOM_OUT = 'ZOOM_OUT';
 export const PROJECTION_TYPE = 'PROJECTION_TYPE';
 export const MAP_TYPE = 'MAP_TYPE';
+export const RESET_PROJECTION = 'RESET_PROJECTION';
 
 export const changeRotation = payload => ({
   type: ROTATE,
@@ -38,5 +39,10 @@ export const changeProjection = payload => ({
 
 export const changeMapType = payload => ({
   type: MAP_TYPE,
+  payload,
+});
+
+export const resetProjection = payload => ({
+  type: RESET_PROJECTION,
   payload,
 });
